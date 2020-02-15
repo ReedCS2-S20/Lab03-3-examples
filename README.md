@@ -4,14 +4,14 @@
 
 ---
  
-This is the initial repository for the third homework assignment for
-the Spring 2020 offering of Reed's CSCI 221.
+This is *A WORKING DRAFT* of the initial repository for the third homework
+assignment for the Spring 2020 offering of Reed's CSCI 221.
 
 This folder contains an implementation of a linked list *library*, as
 implemented in the two source files `llist.hh` and `llist.cc`. Neither
 of these files have a `main` in them. Instead, they can be compiled
 with other program source code that needs to use a linked list to
-structure its data. (This is often called the *client code* to the
+structure its data. (Such code is called *client code* of the
 `llist` library we've invented.) This folder also contains a sample
 client program, the source file `test_llist.cc` that is simply a
 "driver" program that can be used to test the linked list code.
