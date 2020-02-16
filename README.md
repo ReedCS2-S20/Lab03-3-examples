@@ -4,14 +4,14 @@
 
 ---
  
-This is *A WORKING DRAFT* of the initial repository for the third homework
-assignment for the Spring 2020 offering of Reed's CSCI 221.
+This is the initial repository for the third homework assignment for
+the Spring 2020 offering of Reed's CSCI 221.
 
 This folder contains an implementation of a linked list *library*, as
 implemented in the two source files `llist.hh` and `llist.cc`. Neither
 of these files have a `main` in them. Instead, they can be compiled
 with other program source code that needs to use a linked list to
-structure its data. (Such code is called *client code* of the
+structure its data. (This is often called the *client code* to the
 `llist` library we've invented.) This folder also contains a sample
 client program, the source file `test_llist.cc` that is simply a
 "driver" program that can be used to test the linked list code.
@@ -197,14 +197,186 @@ to give better feedback on your running program.
 
 ---
 
-### Part 1: complete `llist`
+### Separate compilation: "header files" versus source files
+
+Take a careful look through the starter code in the three files
+`llist.cc`, `llist.hh`, and `test_llist.cc`. What you are seeing is a
+more elaborate, and more careful, modularization of a program that
+interacts with its user, manipulating a linked list data
+structure. Rather than have one large program source file, I've
+instead broken up the C++ code into the two files `llist.cc` and
+`test_llist.cc`. I've also then written a *header file* `llist.hh` which
+defines the linked list data structure and its operations. 
+
+This header file is needed for several reasons, but overall because of
+the way the C++ compiler works. It compiles each `.cc` file *on its
+own*, and then combines that separately compiled code (the combining
+of the code is called *linking*) into a single executable. I'll 
+describe more how the header file is used, but the short of it is that 
+this header file contains information about the `llist` structs and 
+functions that are needed during the compilation of both `llist.cc`
+and `test_llist.cc`.
+
+The idea here is that the `llist.hh` and `llist.cc` files could be
+combined with any program that needs a linked list, not just the tester
+code. They are not specially written just for `test_llist` and can be
+seen as a *library* that the tester relies on.
+
+You'll notice, further, that my library code in `llist.cc` and
+`llist.hh` define a *namespace* named `llist` that serves as the
+prefix for all the type and function names it defines. So that means
+that the test program defines a variable like so:
+
+    llist::llist* theList;
+
+to talk about a pointer to a `llist` struct named `theList`. And it
+calls functions like so
+
+    llist::insertAtFront(theList,what);
+
+to invoke the ones named and defined in `llist.cc`.
+
+The `llist::llist` and `llist::node` structs are defined separately in
+the *header file* named `llist.hh` and the test program and the
+implementation code each need to use those definitions, the files
+`test_llist.cc` and `llist.cc` each have a line on the top reading
+
+    #include "llist.hh"
+
+This has the effect of asking the compiler to load in those definitions
+when it is compiling that C++ source code. That is, when the compiler
+is looking through the code in `llist.cc`, it needs to know the definitions 
+that are provided in `llist.hh`, and so they are `#include`-ed at the top.
+And when the compiler is reading the code for `test_llist.cc`, it needs
+those definitions from `llist.hh` as well, and so they get stitched in
+by the `#include` directive at the top of its file.
+
+Finally, you'll notice that the `llist.hh` file has the three special
+`#ifndef`, `#define`, and `#endif` directives surrounding the struct
+and function declarations. This are needed due to some technical
+idiosyncracies of how C++ compilation works, inherited from C. They are
+used to make sure that no compilation `#include`s this information more
+than once.
+
+We'll continue to write C++ source code in this modular fashion. You'll be
+asked to mimic this style in Parts 2 and 3 of this homework.
 
 ---
 
-### Part 2: write `order`
+### Part 1: complete `llist`
+
+Modify the source code for the file `llist.cc` and complete the code
+for the two linked list functions `length` and `remove`. These should
+act as follows:
+
+• `int length(llist* list)`: Return the number of nodes in a given
+linked list. To do this, just initialize a count variable to 0,
+and travers the list's nodes with a loop, starting with `list->first`.
+For each node you touch during that traversal, increment that count.
+When the loop is done, return that count.
+
+Look at the code for several of the linked list functions, many of which
+using some variant of a linked list traversal. You'll want to do the same,
+or similar. This code should work for *any* length list, including lists
+of length 0 and length 1. You'll want to test the code in all these cases.
+
+• `void remove(llist* list, int value)`: Search through the nodes of
+the given linked list, looking for the first occurrence of a node
+whose `data` component matches `value`. When you find that node,
+excise it from the list and call `delete` on its pointer. The code
+can be written to assume that the list contains `value` in *some*
+node.
+
+For `remove`, you'll want to write code that is a hybrid of the
+function `contains`, the function `deleteFront`, and the function
+`deleteEnd`. This is because, as you'll discover you'll want 
+to handle two cases: the case where `value` equals the integer
+stored at `list->first->data`, and the case where its in one 
+of the subsequent nodes. In the former case, you can just rely
+on `deleteFront`. In the case where `value` sits in a node
+beyond the first one, you'll want to traverse down the list
+with `leader` and `follower` pointers, just like `deleteEnd`
+does, and look for whether `leader->data` holds `value` (somewhat
+similar to what needs to be done in `contains`). 
+
+But then, unlike any code we've written so far, you'll want to change
+`follower->next` so that it skips over the `leader` node, and links one
+node beyond. You'll then want to call `delete` on the node where 
+`value` was found.
+
+---
+
+### Part 2: write `ordered`
+
+For this exercise, you're going to invent a different linked list data
+structure that holds a sequence of *key-value* pairs, sorted by the
+key. This is called an *ordered dictionary* data structure. We'll make
+the keys of type `std::string` and we'll have each key's associated
+value be of type `int`. The resulting code will mimic many aspects of
+Python's `dict` type, except entries won't be removed, and missing
+entries will have a default associated value of 0.
+
+Probably the best way to get started with this assignment is to make
+copies of the `llist` code. You could type these three commands:
+
+    cp llist.hh ordered.hh
+    cp llist.cc ordered.cc
+    cp test_llist.cc test_ordered.cc
+
+In those files, you'll want to change every line that has
+
+    #include "llist.hh"
+
+so that `ordered.hh` is included instead. And we'll also instead
+use a new namespace called `ordered` and invent a new struct type
+called `dict` (rather than `llist` and `llist` in Part 1). Your
+`main`, then, will ultimately test the use of a value of type
+`ordered::dict*` rather than `llist::llist*`. We'll also 
+use `entry` as the type name for its linked list nodes, rather
+than the type name `node`. So in `ordered.cc` we'll have pointers
+of type `entry*` rather than `node*`.
+
+In `ordered.hh` define a `struct entry` that contains three components:
+
+• `key`: a `std::string` value stored for a dictionary entry,  
+• `value`: an `int` stored for each entry, associated with its key string, and  
+• `next`: a `struct entry*` pointer to the next entry in the dictionary.
+
+Also in `ordered.hh` define a `dict` struct that contains two components:
+
+• `first`: an `entry*` that points to the first entry in the dictionary, or is `nullptr`, and  
+• `defaultValue`: an `int` that represents the associated values of keys that don't yet have an entry.
+
+You are to define these functions in `ordered.cc`:
+
+• `dict* build(void)`: returns a pointer to an empty dictionary.  
+• `int get(dict* D, std::string k)`: returns the value associated with the entry with key `k`, or
+the default value if that key has no entry yet in `D`.  
+• `void set(dict* D, std::string k, int v)`: updates `D` so that value `v` is associated with key `k`.
+This could either add an entry into the linked list if `k` doesn't yet have one, or update 
+an existing entry if `k` has one.
+• `std::string toString(dict* D)`: give back a Python representation of the dictionary's 
+existing entries, and in increasing alphabetical order by their keys.
+
+For all of these functions, the linked list that you maintain should be in *alphabetical order of
+the entry's keys*.  This means that your `set` operation will have to find the place where it needs
+to place an entry, when it discovers that the entry `k` doesn't yet exist. This also means that
+your code for `get` can exit the traversal loop early. It won't need to traverse *all* the nodes
+to discover that a key has no entry.
+
+You'll want to modify the testing code's `main` so that it tests the `set` and `get` operations.
+It should start by building an empty `order::dict*`, accept a series of those commands to
+modify that ordered dictionary, and it should output the `order::toString` of the dictionary
+that results from each change. Include `help` and `quit` commands, too.
+
+Note that you can get rid of the `main` code that processes `argc` and `argv`, instead
+having it declared as type `int main(void)`. You'll want to keep the `parseCommand` code to
+figure out the user's inputs for the commands `get <key>` and `set <key> <value>`.
 
 ---
 
 ### Part 3: write `queue`
+
+*coming soon*
 
 ---
