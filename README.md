@@ -349,7 +349,7 @@ Also in `ordered.hh` define a `dict` struct that contains two components:
 
 You are to define these functions in `ordered.cc`:
 
-• `dict* build(void)`: returns a pointer to an empty dictionary.  
+• `dict* build(int v)`: returns a pointer to an empty dictionary.  Missing entries have a default associated value of `v`.
 • `int get(dict* D, std::string k)`: returns the value associated with the entry with key `k`, or
 the default value if that key has no entry yet in `D`.  
 • `void set(dict* D, std::string k, int v)`: updates `D` so that value `v` is associated with key `k`.
@@ -373,10 +373,35 @@ Note that you can get rid of the `main` code that processes `argc` and `argv`, i
 having it declared as type `int main(void)`. You'll want to keep the `parseCommand` code to
 figure out the user's inputs for the commands `get <key>` and `set <key> <value>`.
 
+Here is a transcription of the code working:
+    $ ./test_ordered
+    Your dictionary is {}.
+    Enter a dictionary command: get bob
+    That key has value 0.
+    Your dictionary is {}.
+    Enter a dictionary command: set bob 42
+    Your dictionary is {'bob': 42}.
+    Enter a dictionary command: get bob
+    That key has value 42.
+    Your dictionary is {'bob': 42}.
+    Enter a dictionary command: set alice 101
+    Your dictionary is {'alice': 101, 'bob': 42}.
+    Enter a dictionary command: set carlos -6
+    Your dictionary is {'alice': 101, 'bob': 42, 'carlos': -6}.
+    Enter a dictionary command: set bob 1234
+    Your dictionary is {'alice': 101, 'bob': 1234, 'carlos': -6}.
+    Enter a dictionary command: get carlos
+    That key has value -6.
+    Your dictionary is {'alice': 101, 'bob': 1234, 'carlos': -6}.
+    Enter a dictionary command: quit
+    Bye!
+    $
+Note that `main` creates a dictionary whose default value is 0. 
+
+You *do not* need to write a destructor `destroy`, but you are welcome to as a BONUS exercise.
+
 ---
 
 ### Part 3: write `queue`
-
-*coming soon*
 
 ---
